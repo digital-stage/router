@@ -11,10 +11,7 @@
         "cflags!": [ "-fno-exceptions" ],
         "cflags": [
             "-Wall",
-            "-std=c++11",
-            "-pthread",
             "-fno-finite-math-only",
-            "-ggdb"
           ],
         "cflags_cc!": [ "-fno-exceptions" ],
         "cflags_cc": [
@@ -23,7 +20,8 @@
             "-Wno-deprecated-declarations",
             "-std=c++11",
             "-pthread",
-            "-ggdb"
+            "-ggdb",
+            "-fPIC"
           ],
         'include_dirs': [
             "<!@(node -p \"require('node-addon-api').include\")",
