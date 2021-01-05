@@ -55,6 +55,14 @@
                 "-ext-numeric-literals",
               ]
             }],
+            ['ARCH=="x86_64"', {
+              'cflags_cc': [
+                "-msse"
+                "-msse2",
+                "-mfpmath=sse",
+                "-ffast-math"
+              ]
+            }],
           ]
     }]
 }
