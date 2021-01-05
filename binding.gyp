@@ -32,7 +32,7 @@
         'libraries': [
             "-lcurl",
             "-ldl",
-            "-L<!(pwd)/libov/build/"
+             "<!(pwd)/libov/build/libov.a"
         ],
         'dependencies': [
             "<!(node -p \"require('node-addon-api').gyp\")"
