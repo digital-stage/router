@@ -26,6 +26,7 @@
             "-ggdb"
           ],
         "ldflags": [
+            "-Llibov/build"
         ],
         'include_dirs': [
             "<!@(node -p \"require('node-addon-api').include\")",
@@ -33,7 +34,8 @@
         ],
         'libraries': [
             "-lcurl",
-            "-ldl"
+            "-ldl",
+            "-lov"
         ],
         'dependencies': [
             "<!(node -p \"require('node-addon-api').gyp\")"
