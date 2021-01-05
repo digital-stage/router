@@ -15,7 +15,6 @@
             "-pthread",
             "-fno-finite-math-only",
             "-ggdb"
-            "-Wno-deprecated-declarations"
           ],
         "cflags_cc!": [ "-fno-exceptions" ],
         "cflags_cc": [
@@ -24,7 +23,6 @@
             "-pthread",
             "-fno-finite-math-only",
             "-ggdb"
-            "-Wno-deprecated-declarations"
           ],
         "ldflags": [
         ],
