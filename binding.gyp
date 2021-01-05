@@ -33,8 +33,7 @@
         ],
         'libraries': [
             "-lcurl",
-            "-ldl",
-            "-lov"
+            "-ldl"
         ],
         'dependencies': [
             "<!(node -p \"require('node-addon-api').gyp\")"
