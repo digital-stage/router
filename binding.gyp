@@ -34,22 +34,42 @@
         'libraries': [
             "-lcurl",
             "-ldl",
-            "-lov",
+            "-lov"
         ],
         'dependencies': [
             "<!(node -p \"require('node-addon-api').gyp\")"
         ],
         'defines': [
             'OVBOXVERSION="<!(echo $FULLVERSION)"',
-            'NAPI_DISABLE_CPP_EXCEPTIONS'
+            'OVBOXVERSION="<!(echo $FULLVERSION)"'
          ],
         'conditions': [
+            ['"<!(uname -m)"=="x86_64"', {
+               'defined': [
+                'AMD64'
+               ]
+            }],
+            ['"<!(uname -m)"=="i386"', {
+               'defined': [
+                'IA32'
+               ]
+            }],
+            ['"<!(uname -m)"=="arm*"', {
+               'defined': [
+                'ARM'
+               ]
+            }],
+            ['OS=="win"', {
+              'defines': [
+                'WIN32'
+              ]
+            }],
             ['OS=="mac"', {
               'xcode_settings': {
                 'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
               },
               'defines': [
-                '__APPLE__'
+                'OSX'
               ]
             }],
             ['OS=="linux"', {
@@ -60,6 +80,6 @@
                 'LINUX'
               ]
             }]
-          ]
+        ]
     }]
 }
