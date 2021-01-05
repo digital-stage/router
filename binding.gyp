@@ -19,6 +19,8 @@
         "cflags_cc!": [ "-fno-exceptions" ],
         "cflags_cc": [
             "-Wall",
+            "-fno-finite-math-only",
+            "-Wno-deprecated-declarations",
             "-std=c++11",
             "-pthread",
             "-fno-finite-math-only",
@@ -47,7 +49,12 @@
               'xcode_settings': {
                 'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
               }
-            }]
+            }],
+            ['OS=="linux"', {
+              'cflags_cc': [
+                "-ext-numeric-literals",
+              ]
+            }],
           ]
     }]
 }
