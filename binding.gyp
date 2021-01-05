@@ -23,7 +23,6 @@
             "-Wno-deprecated-declarations",
             "-std=c++11",
             "-pthread",
-            "-fno-finite-math-only",
             "-ggdb"
           ],
         "ldflags": [
@@ -48,11 +47,17 @@
             ['OS=="mac"', {
               'xcode_settings': {
                 'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
-              }
+              },
+              'defines': [
+                '__APPLE__'
+              ]
             }],
             ['OS=="linux"', {
               'cflags_cc': [
                 "-ext-numeric-literals",
+              ],
+              'defines': [
+                'LINUX'
               ]
             }]
           ]
