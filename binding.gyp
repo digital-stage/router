@@ -25,12 +25,9 @@
             "-pthread",
             "-ggdb"
           ],
-        "ldflags": [
-            "-Llibov/build"
-        ],
         'include_dirs': [
             "<!@(node -p \"require('node-addon-api').include\")",
-            "libov/src"
+            "<!(pwd)/libov/src"
         ],
         'libraries': [
             "-lcurl",
