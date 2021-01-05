@@ -1,3 +1,4 @@
 [submodule "libov"]
 	path = libov
 	url = https://github.com/gisogrimm/libov.git
+    branch = feature/fpic-flag
