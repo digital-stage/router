@@ -44,17 +44,17 @@
             'OVBOXVERSION="<!(echo $FULLVERSION)"'
          ],
         'conditions': [
-            ['"<!(uname -m)"=="x86_64"', {
+            ['"$ARCH"=="AMD64"', {
                'defined': [
                 'AMD64'
                ]
             }],
-            ['"<!(uname -m)"=="i386"', {
+            ['"$ARCH"=="IA32"', {
                'defined': [
                 'IA32'
                ]
             }],
-            ['"<!(uname -m)"=="arm*"', {
+            ['"$ARCH"=="ARM"', {
                'defined': [
                 'ARM'
                ]

@@ -13,4 +13,3 @@ elif [[ $UNAME_M == "i386" ]]; then
 elif [[ $UNAME_M == arm* ]]; then
   ARCH=ARM
 fi
-echo $ARCH
