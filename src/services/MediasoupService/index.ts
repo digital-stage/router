@@ -329,7 +329,7 @@ class MediasoupService {
                     return this.getProducer(payload.globalProducerId)
                         .then(async (producer) => {
                             if (producer) {
-                                if (producer.routerId !== this.router._id) {
+                                if (producer.routerId === this.router._id) {
                                     // This is the right router
                                     if (this.localProducers[producer.routerProducerId]) {
                                         const transport: WebRtcTransport = this.transports.webrtc[payload.transportId];
