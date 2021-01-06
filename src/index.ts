@@ -32,8 +32,9 @@ const startService = () => {
 
             serverConnection.on(ServerGlobalEvents.READY, (router) => {
                 info("Successful authenticated on API server");
-                mediasoupService = new MediasoupService(PORT, serverConnection, router, mediasoupConfig);
+                mediasoupService = new MediasoupService(serverConnection, router, mediasoupConfig);
                 mediasoupService.init()
+                    .then(() => mediasoupService.start(PORT))
                     .then(() => {
                         info("Running mediasoup on port " + PORT);
                     })

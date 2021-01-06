@@ -34,7 +34,7 @@ export interface MediasoupConfiguration {
 class MediasoupService {
     private readonly serverConnection: ITeckosClient;
     private readonly provider: TemplatedApp;
-    private readonly socket: ITeckosProvider;
+    private readonly socket: UWSProvider;
     private readonly router: Router;
     private readonly config: MediasoupConfiguration;
     private initialized: boolean = false;
@@ -61,13 +61,18 @@ class MediasoupService {
         [id: string]: Consumer
     } = {};
 
-    constructor(port: number, serverConnection: ITeckosClient, router: Router, config: MediasoupConfiguration) {
+    constructor(serverConnection: ITeckosClient, router: Router, config: MediasoupConfiguration) {
+        this.router = router;
+        this.config = config;
         this.serverConnection = serverConnection;
         this.provider = uWS.App();
         this.socket = new UWSProvider(this.provider);
         this.attachRestHandlers();
-        this.router = router;
-        this.config = config;
+        this.attachSocketHandlers();
+    }
+
+    public start = (port: number): Promise<any> => {
+        return this.socket.listen(port);
     }
 
     public close = () => {
