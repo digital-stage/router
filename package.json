@@ -5,7 +5,7 @@
   "main": "index.js",
   "gypfile": true,
   "scripts": {
-    "preinstall": "git submodule update --init && ./version.sh && make -C libov && node-gyp build",
+    "preinstall": "git submodule update --init && ./version.sh && make -C libov && node-gyp configure && node-gyp build",
     "dev": "DEBUG=* nodemon --watch './src/**/*.ts' --exec 'ts-node' src/index.ts",
     "lint": "npx eslint ./src --ext .js,.ts",
     "build": "NODE_ENV=production tsc",
