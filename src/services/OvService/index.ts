@@ -1,7 +1,7 @@
 import ITeckosClient from "teckos-client/dist/ITeckosClient";
 import {ClientRouterEvents, ServerRouterEvents} from "../../events";
 import Stage from "../../model/Stage";
-import OvServer, {OvServerT} from "./ov-server";
+import NativeOvServer, {OvServer} from "./OvServer";
 import {OV_MAX_PORT, OV_MIN_PORT} from "../../env";
 import debug from "debug";
 
@@ -18,7 +18,7 @@ class OvService {
     private managedStages: {
         [stageId: string]: {
             stage: Stage,
-            ovServer: OvServerT
+            ovServer: OvServer
         }
     } = {};
     private ports: {
@@ -48,11 +48,38 @@ class OvService {
             if (port) {
                 this.ports[port] = stage._id;
                 try {
-                    const ovServer = await this.startOvServer(port, 50, stage.name);
+                    const ovServer = await this.startOvServer(port, 50, stage._id);
                     this.managedStages[stage._id] = {
                         stage,
                         ovServer
                     };
+                    ovServer.on("status", (status) => {
+                        this.serverConnection.emit(ClientRouterEvents.STAGE_MANAGED, {
+                            id: status.stageId,
+                            ovServer: {
+                                ipv4: this.ipv4,
+                                ipv6: this.ipv6,
+                                port,
+                                serverJitter: status.serverjitter,
+                                pin: status.pin,
+                            }
+                        });
+                    });
+                    ovServer.on("latency", (report) => {
+                        this.serverConnection.emit(ClientRouterEvents.STAGE_MANAGED, {
+                            id: report.stageId,
+                            ovServer: {
+                                latency: {
+                                    [report.srcOvStageDevceId]: {
+                                        [report.destOvStageDeviceId]: {
+                                            latency: report.latency,
+                                            jitter: report.jitter
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    });
                     info("Manging stage " + stage._id + " '" + stage.name + "'");
                     this.serverConnection.emit(ClientRouterEvents.STAGE_MANAGED, {
                         id: stage._id,
@@ -71,12 +98,11 @@ class OvService {
         }
     }
 
-    public startOvServer = (port: number, prio: number, name: string): Promise<OvServerT> => {
-        const validName = name.replace(" ", "_");
-        const promise = new Promise<OvServerT>((resolve) => {
+    public startOvServer = (port: number, prio: number, stageId: string): Promise<OvServer> => {
+        const promise = new Promise<OvServer>((resolve) => {
             const timeout = setTimeout(() => {
                 clearTimeout(timeout);
-                resolve(new OvServer(port, 50, "digitalstage", validName));
+                resolve(new NativeOvServer(port, 50, stageId));
                 this.delay -= TIMEOUT;
             }, this.delay);
         });

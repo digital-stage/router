@@ -4,9 +4,7 @@
         "sources": [
             "cppsrc/main.cpp",
             "cppsrc/server/ov-server.cpp",
-            "cppsrc/server/ov-server.h",
             "cppsrc/server/ov-server-wrapper.cpp",
-            "cppsrc/server/ov-server-wrapper.h",
         ],
         "cflags!": [ "-fno-exceptions" ],
         "cflags": [
@@ -25,6 +23,7 @@
           ],
         'include_dirs': [
             "<!@(node -p \"require('node-addon-api').include\")",
+            "<!@(node -p \"require('napi-thread-safe-callback').include\")",
             "<!(pwd)/libov/src"
         ],
         'libraries': [

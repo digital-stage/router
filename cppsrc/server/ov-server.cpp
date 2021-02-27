@@ -1,20 +1,11 @@
 #include "ov-server.h"
 
-CURL* curl;
-
 static bool quit_app(false);
 
-ov_server_t::ov_server_t(int portno_, int prio, const std::string& group_, const std::string& stagename_)
+ov_server_t::ov_server_t(int portno_, int prio, const std::string& stage_id)
     : portno(portno_), prio(prio), secret(1234), socket(secret), runsession(true),
-      roomname(stagename_), lobbyurl("http://oldbox.orlandoviols.com"),
-      serverjitter(-1), group(group_)
+      stage_id(stage_id), serverjitter(-1)
 {
-  // Init curl
-  curl_global_init(CURL_GLOBAL_DEFAULT);
-  curl = curl_easy_init();
-  if(!curl)
-        throw ErrMsg("Unable to initialize curl.");
-
   // Init chrono and seed
   std::chrono::high_resolution_clock::time_point start(std::chrono::high_resolution_clock::now());
   std::chrono::high_resolution_clock::time_point end(std::chrono::high_resolution_clock::now());
@@ -35,7 +26,7 @@ ov_server_t::ov_server_t(int portno_, int prio, const std::string& group_, const
   endpoints.resize(255);
   jittermeasurement_thread =
       std::thread(&ov_server_t::jittermeasurement_service, this);
-  //announce_thread = std::thread(&ov_server_t::announce_service, this);
+  announce_thread = std::thread(&ov_server_t::announce_service, this);
 
   // Now start worker
   workerthread = std::thread(&ov_server_t::srv, this);
@@ -54,8 +45,6 @@ void ov_server_t::quitwatch()
   while(!quit_app)
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   runsession = false;
-  curl_easy_cleanup(curl);
-  curl_global_cleanup();
   socket.close();
 }
 
@@ -104,37 +93,29 @@ void ov_server_t::announce_service()
         secret = r & 0xfffffff;
         socket.set_secret(secret);
       }
-      // register at lobby:
-      CURLcode res;
-      sprintf(cpost, "?port=%d&name=%s&pin=%d&srvjit=%1.1f&grp=%s", portno,
-              roomname.c_str(), secret, serverjitter, group.c_str());
-      serverjitter = 0;
-      std::string url(lobbyurl);
-      url += cpost;
-      curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-      curl_easy_setopt(curl, CURLOPT_USERPWD, "room:room");
-      curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-      curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-      res = curl_easy_perform(curl);
-      if(res == 0)
-        cnt = 6000;
-      else
-        cnt = 500;
+      if( this->on_status ) {
+        this->on_status({
+            this->stage_id,
+            secret,
+            serverjitter,
+            this->portno
+        });
+      }
+      cnt = 6000;
     }
     --cnt;
     std::this_thread::sleep_for(std::chrono::milliseconds(PINGPERIODMS));
     while(!latfifo.empty()) {
       latreport_t lr(latfifo.front());
       latfifo.pop();
-      // register at lobby:
-      sprintf(cpost, "?latreport=%d&src=%d&dest=%d&lat=%1.1f&jit=%1.1f", portno,
-              lr.src, lr.dest, lr.tmean, lr.jitter);
-      std::string url(lobbyurl);
-      url += cpost;
-      curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-      curl_easy_setopt(curl, CURLOPT_USERPWD, "room:room");
-      curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-      curl_easy_perform(curl);
+
+      this->on_latency({
+          this->stage_id,
+          lr.src,
+          lr.dest,
+          lr.tmean,
+          lr.jitter
+      });
     }
   }
 }
@@ -185,6 +166,8 @@ void ov_server_t::srv()
   set_thread_prio(prio);
   char buffer[BUFSIZE];
   log(portno, "Multiplex service started (version " OVBOXVERSION ")");
+  if( this->on_ready )
+   this->on_ready(portno);
   endpoint_t sender_endpoint;
   stage_device_id_t rcallerid;
   port_t destport;
