@@ -269,6 +269,7 @@ void ov_server_t::jittermeasurement_service()
     std::this_thread::sleep_for(std::chrono::microseconds(2000));
     double t(get_pingtime(t1));
     t -= 2.0;
+    std::cout << "SENDERJITTER: " << serverjitter << std::endl;
     serverjitter = std::max(t, serverjitter);
   }
 }
