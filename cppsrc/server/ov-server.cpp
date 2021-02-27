@@ -166,8 +166,7 @@ void ov_server_t::srv()
   set_thread_prio(prio);
   char buffer[BUFSIZE];
   log(portno, "Multiplex service started (version " OVBOXVERSION ")");
-  if( this->on_ready )
-   this->on_ready(portno);
+  this->on_ready(portno);
   endpoint_t sender_endpoint;
   stage_device_id_t rcallerid;
   port_t destport;
