@@ -93,14 +93,12 @@ void ov_server_t::announce_service()
         secret = r & 0xfffffff;
         socket.set_secret(secret);
       }
-      if( this->on_status ) {
-        this->on_status({
-            this->stage_id,
-            secret,
-            serverjitter,
-            this->portno
-        });
-      }
+      this->on_status({
+        this->stage_id,
+        secret,
+        serverjitter,
+        this->portno
+      });
       cnt = 6000;
     }
     --cnt;
