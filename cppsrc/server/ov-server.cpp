@@ -101,6 +101,7 @@ void ov_server_t::announce_service()
         serverjitter,
         this->portno
       });
+      // retry in 6000 periods (10 minutes):
       cnt = 6000;
     }
     --cnt;
