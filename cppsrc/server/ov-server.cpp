@@ -86,14 +86,15 @@ void ov_server_t::announce_service()
   uint32_t cnt(0);
   char cpost[1024];
   while(runsession) {
-    std::cout << "announce_service: " << cnt << std::endl;
     if(!cnt) {
+      std::cout << "announce_service: " << cnt << std::endl;
       // if nobody is connected create a new pin:
       if(get_num_clients() == 0) {
         long int r(random());
         secret = r & 0xfffffff;
         socket.set_secret(secret);
       }
+      std::cout << "sending status" << std::endl;
       this->on_status({
         this->stage_id,
         secret,
@@ -108,6 +109,7 @@ void ov_server_t::announce_service()
       latreport_t lr(latfifo.front());
       latfifo.pop();
 
+      std::cout << "sending latency" << std::endl;
       this->on_latency({
           this->stage_id,
           lr.src,
