@@ -3,9 +3,7 @@
         "target_name": "ovserver",
         "sources": [
             "cppsrc/main.cpp",
-            "cppsrc/server/ov-server.h",
             "cppsrc/server/ov-server.cpp",
-            "cppsrc/server/ov-server-wrapper.h",
             "cppsrc/server/ov-server-wrapper.cpp",
         ],
         "cflags!": [ "-fno-exceptions" ],

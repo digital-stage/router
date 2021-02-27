@@ -11,7 +11,8 @@
 #include <vector>
 #include <queue>
 #include <signal.h>
-#include <curl/curl.h>
+#include <functional>
+
 
 // period time of participant list announcement, in ping periods:
 #define PARTICIPANTANNOUNCEPERIOD 20
