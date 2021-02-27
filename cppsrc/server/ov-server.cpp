@@ -86,6 +86,7 @@ void ov_server_t::announce_service()
   uint32_t cnt(0);
   char cpost[1024];
   while(runsession) {
+    std::cout << "announce_service: " << cnt << std::endl;
     if(!cnt) {
       // if nobody is connected create a new pin:
       if(get_num_clients() == 0) {
