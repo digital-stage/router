@@ -3,13 +3,11 @@ import {ClientRouterEvents, ServerRouterEvents} from "../../events";
 import {Stage} from "../../model/Stage";
 import NativeOvServer, {OvServer} from "./OvServer";
 import {OV_MAX_PORT, OV_MIN_PORT} from "../../env";
-import debug from "debug";
+import logger from "../../logger";
 
 const TIMEOUT: number = 2000;
 
-const info = debug("router").extend("ov");
-const warn = info.extend("warn");
-const error = info.extend("error");
+const {info, warn, error} = logger("ov");
 
 class OvService {
     private readonly serverConnection: ITeckosClient;

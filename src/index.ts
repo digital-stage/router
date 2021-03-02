@@ -4,15 +4,12 @@ import {
     ServerGlobalEvents,
 } from "./events";
 import {getDefaultMediasoupConfig, getInitialRouter} from "./utils";
-import debug from "debug";
 import OvService from "./services/OvService";
 import MediasoupService from "./services/MediasoupService";
 import ITeckosClient from "teckos-client/dist/ITeckosClient";
+import logger from "./logger";
 
-const info = debug("router");
-const warn = info.extend("warn");
-const error = info.extend("error");
-
+const {info, warn, error} = logger("");
 
 let ovService: OvService;
 let mediasoupService: MediasoupService;

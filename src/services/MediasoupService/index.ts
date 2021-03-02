@@ -1,10 +1,9 @@
-import {ITeckosProvider, UWSProvider} from 'teckos';
+import {UWSProvider} from 'teckos';
 import * as mediasoup from "mediasoup";
 import {Router} from "../../model/Router";
 import {ITeckosClient} from "teckos-client";
 import * as uWS from 'teckos/uws';
 import {TemplatedApp} from "teckos/uws";
-import debug from "debug";
 import {DtlsParameters, WebRtcTransport} from "mediasoup/lib/WebRtcTransport";
 import {RouterRequests} from "./events";
 import {Router as MediasoupRouter} from "mediasoup/lib/Router";
@@ -16,11 +15,9 @@ import omit from 'lodash/omit';
 import {ClientRouterEvents} from "../../events";
 import {GlobalProducer} from "../../model/GlobalProducer";
 import os from "os";
+import logger from "../../logger";
 
-const info = debug("router").extend("mediasoup");
-const trace = info.extend("trace");
-const warn = info.extend("warn");
-const error = info.extend("error");
+const {trace, warn, error} = logger("mediasoup");
 
 export interface MediasoupConfiguration {
     worker: mediasoup.types.WorkerSettings,

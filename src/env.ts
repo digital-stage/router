@@ -12,7 +12,8 @@ const {
     WS_PREFIX,
     REST_PREFIX,
     DOMAIN,
-    ROOT_PATH
+    ROOT_PATH,
+    SENTRY_DSN
 } = process.env;
 
 const PORT = parseInt(process.env.PORT, 10);
@@ -23,6 +24,7 @@ const OV_MIN_PORT = parseInt(process.env.OV_MIN_PORT, 10);
 const OV_MAX_PORT = parseInt(process.env.OV_MAX_PORT, 10);
 const CONNECTIONS_PER_CPU = parseInt(process.env.CONNECTIONS_PER_CPU, 10);
 const USE_IPV6 = process.env.USE_IPV6 ? process.env.USE_IPV6 === "true" : false;
+const USE_SENTRY = process.env.USE_SENTRY ? process.env.USE_SENTRY === "true" : false;
 
 
 const MEDIASOUP_CONFIG = require('./config').default;
@@ -46,5 +48,7 @@ export {
     WS_PREFIX,
     REST_PREFIX,
     DOMAIN,
-    ROOT_PATH
+    ROOT_PATH,
+    USE_SENTRY,
+    SENTRY_DSN
 }

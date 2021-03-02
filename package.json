@@ -43,6 +43,8 @@
     "typescript": "^4.2.2"
   },
   "dependencies": {
+    "@sentry/integrations": "^6.2.1",
+    "@sentry/node": "^6.2.1",
     "@types/ws": "^7.4.0",
     "bindings": "^1.5.0",
     "debug": "^4.3.1",
@@ -58,6 +60,7 @@
     "public-ip": "^4.0.3",
     "teckos": "^0.2.3",
     "teckos-client": "^0.1.2",
+    "uncaught": "^0.0.5",
     "ws": "^7.4.3"
   }
 }
