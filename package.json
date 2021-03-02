@@ -6,7 +6,7 @@
   "gypfile": true,
   "scripts": {
     "postinstall": "git submodule update --init && ./version.sh && make -C libov && node-gyp configure && node-gyp build",
-    "dev": "DEBUG=* nodemon --watch './src/**/*.ts' --exec 'ts-node' src/index.ts",
+    "dev": "DEBUG=router:* nodemon --watch './src/**/*.ts' --exec 'ts-node' src/index.ts",
     "lint": "npx eslint ./src --ext .js,.ts",
     "build": "NODE_ENV=production tsc",
     "start": "DEBUG=* NODE_ENV=production node ./dist/index.js"

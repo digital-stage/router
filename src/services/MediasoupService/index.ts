@@ -334,6 +334,7 @@ class MediasoupService {
                                     if (this.localProducers[producer.routerProducerId]) {
                                         const transport: WebRtcTransport = this.transports.webrtc[payload.transportId];
                                         if (!transport) {
+                                            error("Transport not found");
                                             return callback('Transport not found');
                                         }
                                         const consumer: Consumer = await transport.consume({
@@ -370,7 +371,8 @@ class MediasoupService {
                             return callback('Producer not found');
                         })
                         .catch((missingProducerError) => {
-                            error(missingProducerError);
+                            error("Could not find producer:");
+                            error(missingProducerError.toString());
                             return callback(missingProducerError);
                         });
                 });
