@@ -1,5 +1,5 @@
 
-interface Stage {
+export interface Stage {
     _id: string;
     name: string;
 
@@ -12,12 +12,24 @@ interface Stage {
     height: number;
     absorption: number;
     damping: number;
+    ambientSoundUrl?: string;
+    ambientLevel: number;
 
     ovServer?: {
-        router?: string;
+        router: string;
         ipv4: string;
         ipv6?: string;
         port: number;
-    }
+        pin: number;
+        serverJitter?: number;
+
+        latency?: {
+            [srcOvStageDeviceId: number]: {
+                [desOvStageDeviceId: number]: {
+                    latency: number;
+                    jitter: number;
+                };
+            };
+        };
+    };
 }
-export default Stage;
