@@ -3,12 +3,14 @@
 static bool quit_app(false);
 
 ov_server_t::ov_server_t(int portno_, int prio, const std::string& stage_id)
-    : portno(portno_), prio(prio), secret(1234), socket(secret), runsession(true),
-      stage_id(stage_id), serverjitter(-1)
+    : portno(portno_), prio(prio), secret(1234), socket(secret),
+      runsession(true), stage_id(stage_id), serverjitter(-1)
 {
   // Init chrono and seed
-  std::chrono::high_resolution_clock::time_point start(std::chrono::high_resolution_clock::now());
-  std::chrono::high_resolution_clock::time_point end(std::chrono::high_resolution_clock::now());
+  std::chrono::high_resolution_clock::time_point start(
+      std::chrono::high_resolution_clock::now());
+  std::chrono::high_resolution_clock::time_point end(
+      std::chrono::high_resolution_clock::now());
   unsigned int seed(
       std::chrono::duration_cast<std::chrono::nanoseconds>(end - start)
           .count());
@@ -95,12 +97,7 @@ void ov_server_t::announce_service()
         socket.set_secret(secret);
       }
       std::cout << "sending status" << std::endl;
-      this->on_status({
-        this->stage_id,
-        secret,
-        serverjitter,
-        this->portno
-      });
+      this->on_status({this->stage_id, secret, serverjitter, this->portno});
       // retry in 6000 periods (10 minutes):
       cnt = 6000;
     }
@@ -111,13 +108,7 @@ void ov_server_t::announce_service()
       latfifo.pop();
 
       std::cout << "sending latency" << std::endl;
-      this->on_latency({
-          this->stage_id,
-          lr.src,
-          lr.dest,
-          lr.tmean,
-          lr.jitter
-      });
+      this->on_latency({this->stage_id, lr.src, lr.dest, lr.tmean, lr.jitter});
     }
   }
 }
@@ -276,5 +267,5 @@ void ov_server_t::jittermeasurement_service()
 
 void ov_server_t::stop()
 {
-    quit_app = true;
+  quit_app = true;
 }

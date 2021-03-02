@@ -6,36 +6,35 @@
 #include "errmsg.h"
 #include "udpsocket.h"
 #include <condition_variable>
+#include <functional>
+#include <queue>
+#include <signal.h>
 #include <string.h>
 #include <thread>
 #include <vector>
-#include <queue>
-#include <signal.h>
-#include <functional>
-
 
 // period time of participant list announcement, in ping periods:
 #define PARTICIPANTANNOUNCEPERIOD 20
 
 struct connection_report_t {
-    std::string stage_id;
-    stage_device_id_t cid;
-    const ep_desc_t& ep;
+  std::string stage_id;
+  stage_device_id_t cid;
+  const ep_desc_t& ep;
 };
 
 struct latency_report_t {
-    std::string stage_id;
-    stage_device_id_t src;
-    stage_device_id_t dest;
-    double lmean;
-    double jitter;
+  std::string stage_id;
+  stage_device_id_t src;
+  stage_device_id_t dest;
+  double lmean;
+  double jitter;
 };
 
 struct status_report_t {
-    std::string stage_id;
-    secret_t pin;
-    double serverjitter;
-    int portno;
+  std::string stage_id;
+  secret_t pin;
+  double serverjitter;
+  int portno;
 };
 
 class latreport_t {
@@ -61,11 +60,11 @@ public:
                         double lmax, uint32_t received, uint32_t lost);
   void stop();
 
-  std::function< void(int) > on_ready;
-  std::function< void(connection_report_t) > on_connect;
-  std::function< void(stage_device_id_t) > on_disconnect;
-  std::function< void(latency_report_t) > on_latency;
-  std::function< void(status_report_t) > on_status;
+  std::function<void(int)> on_ready;
+  std::function<void(connection_report_t)> on_connect;
+  std::function<void(stage_device_id_t)> on_disconnect;
+  std::function<void(latency_report_t)> on_latency;
+  std::function<void(status_report_t)> on_status;
 
 private:
   void jittermeasurement_service();
@@ -93,4 +92,4 @@ private:
   std::string group;
 };
 
-#endif //OV_SERVER_H
+#endif // OV_SERVER_H

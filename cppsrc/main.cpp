@@ -1,7 +1,8 @@
-#include <napi.h>
 #include "server/ov-server-wrapper.h"
+#include <napi.h>
 
-Napi::Object InitAll(Napi::Env env, Napi::Object exports) {
+Napi::Object InitAll(Napi::Env env, Napi::Object exports)
+{
   OvServerWrapper::Init(env, exports);
   return exports;
 }
