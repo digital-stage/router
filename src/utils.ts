@@ -1,4 +1,4 @@
-import Router from "./model/Router";
+import {Router} from "./model/Router";
 import {
     ANNOUNCED_IP, DOMAIN,
     IP_V4,

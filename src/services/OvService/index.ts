@@ -1,6 +1,6 @@
 import ITeckosClient from "teckos-client/dist/ITeckosClient";
 import {ClientRouterEvents, ServerRouterEvents} from "../../events";
-import Stage from "../../model/Stage";
+import {Stage} from "../../model/Stage";
 import NativeOvServer, {OvServer} from "./OvServer";
 import {OV_MAX_PORT, OV_MIN_PORT} from "../../env";
 import debug from "debug";

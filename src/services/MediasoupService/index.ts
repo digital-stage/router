@@ -1,6 +1,6 @@
 import {ITeckosProvider, UWSProvider} from 'teckos';
 import * as mediasoup from "mediasoup";
-import Router from "../../model/Router";
+import {Router} from "../../model/Router";
 import {ITeckosClient} from "teckos-client";
 import * as uWS from 'teckos/uws';
 import {TemplatedApp} from "teckos/uws";
@@ -14,7 +14,7 @@ import {Consumer} from "mediasoup/lib/Consumer";
 import {CONNECTIONS_PER_CPU} from "../../env";
 import omit from 'lodash/omit';
 import {ClientRouterEvents} from "../../events";
-import GlobalProducer from "../../model/GlobalProducer";
+import {GlobalProducer} from "../../model/GlobalProducer";
 import os from "os";
 
 const info = debug("router").extend("mediasoup");
