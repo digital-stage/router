@@ -5,6 +5,8 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
+    "inlineSources": true,
+    "sourceRoot": "/",
     "outDir": "dist"
   },
   "lib": ["es2020"],

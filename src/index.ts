@@ -15,6 +15,14 @@ let ovService: OvService;
 let mediasoupService: MediasoupService;
 let serverConnection: ITeckosClient;
 
+declare global {
+    namespace NodeJS {
+        interface Global {
+            __rootdir__: string;
+        }
+    }
+}
+
 const startService = () => {
     return getInitialRouter()
         .then((initialRouter) => {
