@@ -428,7 +428,7 @@ class MediasoupService {
                 socket.on('disconnect', () => {
                     trace('Client disconnected, cleaning up');
                     Object.keys(consumerIds).forEach((key) => {
-                        if (consumerIds[key]) {
+                        if (this.localConsumers[key]) {
                             trace(`Removing consumer ${key}`);
                             this.localConsumers[key].close();
                             delete this.localConsumers[key];
