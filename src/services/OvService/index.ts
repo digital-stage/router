@@ -64,15 +64,13 @@ class OvService {
                         });
                     });
                     ovServer.on("latency", (report) => {
-                        this.serverConnection.emit(ClientRouterEvents.STAGE_MANAGED, {
-                            id: report.stageId,
-                            ovServer: {
-                                latency: {
-                                    [report.srcOvStageDevceId]: {
-                                        [report.destOvStageDeviceId]: {
-                                            latency: report.latency,
-                                            jitter: report.jitter
-                                        }
+                        this.serverConnection.emit(ClientRouterEvents.REPORT_LATENCY, {
+                            stageId: report.stageId,
+                            latency: {
+                                [report.srcOvStageDevceId]: {
+                                    [report.destOvStageDeviceId]: {
+                                        latency: report.latency,
+                                        jitter: report.jitter
                                     }
                                 }
                             }

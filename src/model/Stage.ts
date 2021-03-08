@@ -1,4 +1,3 @@
-
 export interface Stage {
     _id: string;
     name: string;
@@ -12,6 +11,8 @@ export interface Stage {
     height: number;
     absorption: number;
     damping: number;
+
+    renderAmbient: boolean;
     ambientSoundUrl?: string;
     ambientLevel: number;
 
@@ -22,13 +23,13 @@ export interface Stage {
         port: number;
         pin: number;
         serverJitter?: number;
+    };
 
-        latency?: {
-            [srcOvStageDeviceId: number]: {
-                [desOvStageDeviceId: number]: {
-                    latency: number;
-                    jitter: number;
-                };
+    ovLatency?: {
+        [srcOvStageDeviceId: number]: {
+            [desOvStageDeviceId: number]: {
+                latency: number;
+                jitter: number;
             };
         };
     };
