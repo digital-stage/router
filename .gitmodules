@@ -2,3 +2,6 @@
 	path = libov
 	url = https://github.com/gisogrimm/libov.git
     branch = feature/fpic-flag
+[submodule "api-types-js"]
+	path = src/types
+	url = https://github.com/digital-stage/api-types-js.git

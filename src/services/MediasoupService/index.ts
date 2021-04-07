@@ -1,6 +1,5 @@
 import {UWSProvider} from 'teckos';
 import * as mediasoup from "mediasoup";
-import {Router} from "../../model/Router";
 import {ITeckosClient} from "teckos-client";
 import * as uWS from 'teckos/uws';
 import {TemplatedApp} from "teckos/uws";
@@ -12,10 +11,9 @@ import {Producer} from "mediasoup/lib/Producer";
 import {Consumer} from "mediasoup/lib/Consumer";
 import {CONNECTIONS_PER_CPU} from "../../env";
 import omit from 'lodash/omit';
-import {ClientRouterEvents} from "../../events";
-import {GlobalProducer} from "../../model/GlobalProducer";
 import os from "os";
 import logger from "../../logger";
+import {Router} from "../../types";
 
 const {trace, warn, error} = logger("mediasoup");
 
@@ -313,9 +311,9 @@ class MediasoupService {
                         return callback('Producer not found');
                     });
 
-                socket.on(RouterRequests.CreateConsumer, (payload: {
+                socket.on(RouterRequests.CreateConsumer, async (payload: {
                     transportId: string;
-                    globalProducerId: string;
+                    producerId: string;
                     rtpCapabilities: mediasoup.types.RtpCapabilities;
                 }, callback: (error: string | null, consumer?: any) => void) => {
                     trace(RouterRequests.CreateConsumer);
@@ -323,55 +321,32 @@ class MediasoupService {
                         error('Router is not ready yet');
                         return callback('Router is not ready yet');
                     }
-                    return this.getProducer(payload.globalProducerId)
-                        .then(async (producer) => {
-                            if (producer) {
-                                if (producer.routerId === this.router._id) {
-                                    // This is the right router
-                                    if (this.localProducers[producer.routerProducerId]) {
-                                        const transport: WebRtcTransport = this.transports.webrtc[payload.transportId];
-                                        if (!transport) {
-                                            error("Transport not found");
-                                            return callback('Transport not found');
-                                        }
-                                        const consumer: Consumer = await transport.consume({
-                                            producerId: producer.routerProducerId,
-                                            rtpCapabilities: payload.rtpCapabilities,
-                                            paused: true,
-                                        });
-                                        consumer.observer.on('close', () => {
-                                            trace(`consumer closed: ${consumer.id}`);
-                                        });
-                                        trace(`Created consumer ${consumer.id} for producer ${producer.routerProducerId} and consumer is: ${consumer.paused ? 'paused' : 'running'}`);
-                                        this.localConsumers[consumer.id] = consumer;
-                                        consumerIds[consumer.id] = true;
-                                        return callback(null, {
-                                            id: consumer.id,
-                                            producerId: consumer.producerId,
-                                            kind: consumer.kind,
-                                            rtpParameters: consumer.rtpParameters,
-                                            paused: consumer.paused,
-                                            type: consumer.type,
-                                        });
-                                    }
-                                    warn(`Could not find producer on this router: ${payload.globalProducerId}`);
-                                    return callback('Producer not found');
-                                }
-                                trace('Stream is on different router');
-                                // The producer is on another router, so...
-                                // first create tansports to it, if not available already
-
-                                // TODO: Create consumer on target router and consume it, forwarding to the producer
-                                return callback('Router not found');
-                            }
-                            warn(`Could not find producer in the database: ${payload.globalProducerId}`);
-                            return callback('Producer not found');
-                        })
-                        .catch((missingProducerError) => {
-                            error("Could not find producer:");
-                            error(missingProducerError.toString());
-                            return callback(missingProducerError);
+                    if (this.localProducers[payload.producerId]) {
+                        const transport: WebRtcTransport = this.transports.webrtc[payload.transportId];
+                        if (!transport) {
+                            error("Transport not found");
+                            return callback('Transport not found');
+                        }
+                        const consumer: Consumer = await transport.consume({
+                            producerId: payload.producerId,
+                            rtpCapabilities: payload.rtpCapabilities,
+                            paused: true,
                         });
+                        consumer.observer.on('close', () => {
+                            trace(`consumer closed: ${consumer.id}`);
+                        });
+                        trace(`Created consumer ${consumer.id} for producer ${payload.producerId} and consumer is: ${consumer.paused ? 'paused' : 'running'}`);
+                        this.localConsumers[consumer.id] = consumer;
+                        consumerIds[consumer.id] = true;
+                        return callback(null, {
+                            id: consumer.id,
+                            producerId: consumer.producerId,
+                            kind: consumer.kind,
+                            rtpParameters: consumer.rtpParameters,
+                            paused: consumer.paused,
+                            type: consumer.type,
+                        });
+                    }
                 });
 
                 socket.on(RouterRequests.PauseConsumer,
@@ -457,17 +432,6 @@ class MediasoupService {
                 error(socketError);
             }
         });
-    }
-
-    private getProducer = (globalProducerId: string): Promise<GlobalProducer> => {
-        return new Promise<GlobalProducer>((resolve, reject) => {
-            this.serverConnection.emit(ClientRouterEvents.RESOLVE_PRODUCER, globalProducerId, (error: string | null, producer: GlobalProducer) => {
-                if (error) {
-                    return reject(error);
-                }
-                return resolve(producer);
-            });
-        })
     }
 
     private getAvailableRouter = (): MediasoupRouter | null => {

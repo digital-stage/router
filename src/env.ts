@@ -3,17 +3,21 @@ import {config} from "dotenv";
 config();
 
 const {
-    API_URL,
-    API_KEY,
-    IP_V4,
-    IP_V6,
-    LISTEN_IP,
-    ANNOUNCED_IP,
-    WS_PREFIX,
-    REST_PREFIX,
-    DOMAIN,
-    ROOT_PATH,
-    SENTRY_DSN
+  API_URL,
+  API_KEY,
+  IP_V4,
+  IP_V6,
+  LISTEN_IP,
+  ANNOUNCED_IP,
+  WS_PREFIX,
+  REST_PREFIX,
+  DOMAIN,
+  ROOT_PATH,
+  SENTRY_DSN,
+  COUNTRY_CODE,
+  CITY,
+  LATITUDE,
+  LONGITUDE
 } = process.env;
 
 const PORT = parseInt(process.env.PORT, 10);
@@ -30,25 +34,29 @@ const USE_SENTRY = process.env.USE_SENTRY ? process.env.USE_SENTRY === "true" : 
 const MEDIASOUP_CONFIG = require('./config').default;
 
 export {
-    API_URL,
-    RTC_MIN_PORT,
-    RTC_MAX_PORT,
-    OV_MIN_PORT,
-    OV_MAX_PORT,
-    API_KEY,
-    IP_V4,
-    IP_V6,
-    USE_IPV6,
-    PORT,
-    PUBLIC_PORT,
-    CONNECTIONS_PER_CPU,
-    MEDIASOUP_CONFIG,
-    LISTEN_IP,
-    ANNOUNCED_IP,
-    WS_PREFIX,
-    REST_PREFIX,
-    DOMAIN,
-    ROOT_PATH,
-    USE_SENTRY,
-    SENTRY_DSN
+  API_URL,
+  RTC_MIN_PORT,
+  RTC_MAX_PORT,
+  OV_MIN_PORT,
+  OV_MAX_PORT,
+  API_KEY,
+  IP_V4,
+  IP_V6,
+  USE_IPV6,
+  PORT,
+  PUBLIC_PORT,
+  CONNECTIONS_PER_CPU,
+  MEDIASOUP_CONFIG,
+  LISTEN_IP,
+  ANNOUNCED_IP,
+  WS_PREFIX,
+  REST_PREFIX,
+  DOMAIN,
+  ROOT_PATH,
+  USE_SENTRY,
+  SENTRY_DSN,
+  COUNTRY_CODE,
+  CITY,
+  LATITUDE,
+  LONGITUDE
 }
