@@ -4,7 +4,7 @@ import {
   IP_V6, LATITUDE,
   LISTEN_IP, LONGITUDE,
   MEDIASOUP_CONFIG,
-  OV_MAX_PORT,
+  OV_MAX_PORT, OV_MIN_PORT,
   PUBLIC_PORT, REST_PREFIX, ROOT_PATH,
   RTC_MAX_PORT,
   RTC_MIN_PORT, USE_IPV6, WS_PREFIX
@@ -33,8 +33,6 @@ const getInitialRouter = async (): Promise<Omit<Router, "_id">> => {
   const ipv4: string = IP_V4 || await publicIp.v4()
   const ipv6: string = USE_IPV6 ? IP_V6 || await publicIp.v6() : undefined;
   const locates = await iplocate(ipv4);
-  console.log("LOCATES");
-  console.log(locates);
   return {
     wsPrefix: WS_PREFIX,
     restPrefix: REST_PREFIX,
@@ -44,12 +42,16 @@ const getInitialRouter = async (): Promise<Omit<Router, "_id">> => {
     ipv6: ipv6,
     port: PUBLIC_PORT,
     availableRTCSlots: (RTC_MAX_PORT - RTC_MIN_PORT),
-    availableOVSlots: (OV_MAX_PORT - RTC_MIN_PORT),
+    availableOVSlots: (OV_MAX_PORT - OV_MIN_PORT),
     countryCode: COUNTRY_CODE || locates.country_code,
     city: CITY || locates.city,
     position: {
       lat: LATITUDE || locates.latitude,
       lng: LONGITUDE || locates.longitude
+    },
+    types: {
+      mediasoup: (RTC_MAX_PORT - RTC_MIN_PORT),
+      ov: (OV_MAX_PORT - OV_MIN_PORT)
     }
   };
 }

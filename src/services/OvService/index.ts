@@ -4,7 +4,7 @@ import {OV_MAX_PORT, OV_MIN_PORT} from "../../env";
 import logger from "../../logger";
 import {
   ClientRouterEvents,
-  ClientRouterPayloads,
+  ClientRouterPayloads, Router,
   ServerRouterEvents,
   ServerRouterPayloads,
   Stage
@@ -16,12 +16,13 @@ const {info, warn, error} = logger("ov");
 
 class OvService {
   private readonly serverConnection: ITeckosClient;
+  private readonly router: Router;
   private readonly ipv4: string;
   private readonly ipv6: string;
   private managedStages: {
     [stageId: string]: {
       stage: Stage,
-      //kind: "audio" | "video" | "both";
+      kind: "audio" | "video" | "both";
       ovServer: OvServer
     }
   } = {};
@@ -30,8 +31,9 @@ class OvService {
   } = {};
   private delay: number = 0;
 
-  constructor(serverConnection: ITeckosClient, ipv4: string, ipv6?: string) {
+  constructor(serverConnection: ITeckosClient, router: Router, ipv4: string, ipv6?: string) {
     this.serverConnection = serverConnection;
+    this.router = router;
     this.ipv4 = ipv4;
     this.ipv6 = ipv6;
     this.serverConnection.on(ServerRouterEvents.ServeStage, this.manageStage);
@@ -46,58 +48,9 @@ class OvService {
     this.serverConnection.off(ServerRouterEvents.UnServeStage, this.unManageStage);
   }
 
-<<<<<<< Updated upstream
-    private manageStage = async (stage: Stage) => {
-        if (!this.managedStages[stage._id]) {
-            const port: number | null = this.getFreePort();
-            if (port) {
-                this.ports[port] = stage._id;
-                try {
-                    const ovServer = await this.startOvServer(port, 50, stage._id);
-                    this.managedStages[stage._id] = {
-                        stage,
-                        ovServer
-                    };
-                    ovServer.on("status", (status) => {
-                        this.serverConnection.emit(ClientRouterEvents.STAGE_MANAGED, {
-                            id: status.stageId,
-                            ovServer: {
-                                ipv4: this.ipv4,
-                                ipv6: this.ipv6,
-                                port,
-                                serverJitter: status.serverjitter,
-                                pin: status.pin,
-                            }
-                        });
-                    });
-                    ovServer.on("latency", (report) => {
-                        this.serverConnection.emit(ClientRouterEvents.REPORT_LATENCY, {
-                            stageId: report.stageId,
-                            latency: {
-                                [report.srcOvStageDevceId]: {
-                                    [report.destOvStageDeviceId]: {
-                                        latency: report.latency,
-                                        jitter: report.jitter
-                                    }
-                                }
-                            }
-                        });
-                    });
-                    info("Manging stage " + stage._id + " '" + stage.name + "'");
-                    this.serverConnection.emit(ClientRouterEvents.STAGE_MANAGED, {
-                        id: stage._id,
-                        ovServer: {
-                            ipv4: this.ipv4,
-                            ipv6: this.ipv6,
-                            port
-                        }
-                    });
-                } catch (err) {
-                    error(err);
-=======
   private manageStage = async (payload: ServerRouterPayloads.ServeStage) => {
     const {stage} = payload;
-    if (!this.managedStages[stage._id]) {
+    if (stage.audioType === "ov" && !this.managedStages[stage._id]) {
       const port: number | null = this.getFreePort();
       if (port) {
         this.ports[port] = stage._id;
@@ -105,10 +58,11 @@ class OvService {
           const ovServer = await this.startOvServer(port, 50, stage._id);
           this.managedStages[stage._id] = {
             stage,
+            kind: "audio",
             ovServer
           };
           ovServer.on("status", (status) => {
-            this.serverConnection.emit(ClientRouterEvents.StageServed, {
+            this.serverConnection.emit(ClientRouterEvents.ChangeStage, {
               _id: status.stageId,
               ovServer: {
                 ipv4: this.ipv4,
@@ -117,10 +71,10 @@ class OvService {
                 serverJitter: status.serverjitter,
                 pin: status.pin,
               }
-            } as ClientRouterPayloads.StageServed);
+            } as ClientRouterPayloads.ChangeStage);
           });
           ovServer.on("latency", (report) => {
-            this.serverConnection.emit(ClientRouterEvents.StageServed, {
+            this.serverConnection.emit(ClientRouterEvents.ChangeStage, {
               _id: report.stageId,
               ovServer: {
                 latency: {
@@ -130,18 +84,22 @@ class OvService {
                       jitter: report.jitter
                     }
                   }
->>>>>>> Stashed changes
                 }
               }
-            } as ClientRouterPayloads.StageServed);
+            } as ClientRouterPayloads.ChangeStage);
           });
           info("Manging stage " + stage._id + " '" + stage.name + "'");
           this.serverConnection.emit(ClientRouterEvents.StageServed, {
-            _id: stage._id,
-            ovServer: {
-              ipv4: this.ipv4,
-              ipv6: this.ipv6,
-              port
+            kind: "audio",
+            type: "ov",
+            update: {
+              _id: stage._id,
+              audioRouter: this.router.id,
+              ovServer: {
+                ipv4: this.ipv4,
+                ipv6: this.ipv6,
+                port,
+              }
             }
           } as ClientRouterPayloads.StageServed);
         } catch (err) {
@@ -165,17 +123,23 @@ class OvService {
     return promise;
   }
 
-  private unManageStage = (stageId: string) => {
-    const managedStage = this.managedStages[stageId];
-    if (managedStage) {
-      managedStage.ovServer.stop();
-      delete this.managedStages[stageId];
+  private unManageStage = (payload: ServerRouterPayloads.UnServeStage) => {
+    const {stageId, type, kind} = payload;
+    if (type === "ov" && kind === "audio") {
+      const managedStage = this.managedStages[stageId];
+      if (managedStage) {
+        managedStage.ovServer.stop();
+        delete this.managedStages[stageId];
 
-      this.serverConnection.emit(ClientRouterEvents.StageUnServed, {
-        stageId,
-        type: "mediasoup",
-        //kind: managedStage.kind,
-      } as ClientRouterPayloads.StageUnServed);
+        this.serverConnection.emit(ClientRouterEvents.StageUnServed, {
+          type,
+          kind,
+          update: {
+            _id: stageId,
+            audioRouter: null
+          }
+        } as ClientRouterPayloads.StageUnServed);
+      }
     }
   }
 
