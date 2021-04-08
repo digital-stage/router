@@ -1,4 +1,4 @@
-#include "ov-server.cpp"
+#include "ov-server.h"
 #include <napi.h>
 
 class OvServerWrapper : public Napi::ObjectWrap<OvServerWrapper> {

@@ -1,38 +1,37 @@
 #include "ov-server.h"
-#include "callerlist.h"
-#include "common.h"
-#include "errmsg.h"
-#include "udpsocket.h"
-#include <condition_variable>
-#include <queue>
-#include <signal.h>
-#include <string.h>
-#include <thread>
-#include <vector>
-
-#include <curl/curl.h>
-
-CURL* curl;
-
-// period time of participant list announcement, in ping periods:
-#define PARTICIPANTANNOUNCEPERIOD 20
 
 static bool quit_app(false);
 
-ov_server_t::ov_server_t(int portno_, int prio, const std::string& group_)
+ov_server_t::ov_server_t(int portno_, int prio, const std::string& stage_id)
     : portno(portno_), prio(prio), secret(1234), socket(secret),
-      runsession(true),
-      roomname(addr2str(getipaddr().sin_addr) + ":" + std::to_string(portno)),
-      lobbyurl("http://localhost"), serverjitter(-1), group(group_)
+      runsession(true), stage_id(stage_id), serverjitter(-1)
 {
-  endpoints.resize(255);
+  // Init chrono and seed
+  std::chrono::high_resolution_clock::time_point start(
+      std::chrono::high_resolution_clock::now());
+  std::chrono::high_resolution_clock::time_point end(
+      std::chrono::high_resolution_clock::now());
+  unsigned int seed(
+      std::chrono::duration_cast<std::chrono::nanoseconds>(end - start)
+          .count());
+  seed += portno;
+  // initialize random generator:
+  srandom(seed);
+
   socket.set_timeout_usec(100000);
   portno = socket.bind(portno);
+
   logthread = std::thread(&ov_server_t::ping_and_callerlist_service, this);
   quitthread = std::thread(&ov_server_t::quitwatch, this);
-  announce_thread = std::thread(&ov_server_t::announce_service, this);
+
+  // OV box related
+  endpoints.resize(255);
   jittermeasurement_thread =
       std::thread(&ov_server_t::jittermeasurement_service, this);
+  announce_thread = std::thread(&ov_server_t::announce_service, this);
+
+  // Now start worker
+  workerthread = std::thread(&ov_server_t::srv, this);
 }
 
 ov_server_t::~ov_server_t()
@@ -40,6 +39,7 @@ ov_server_t::~ov_server_t()
   runsession = false;
   logthread.join();
   quitthread.join();
+  workerthread.join();
 }
 
 void ov_server_t::quitwatch()
@@ -89,50 +89,26 @@ void ov_server_t::announce_service()
   char cpost[1024];
   while(runsession) {
     if(!cnt) {
-      bool roomempty(false);
+      std::cout << "announce_service: " << cnt << std::endl;
       // if nobody is connected create a new pin:
       if(get_num_clients() == 0) {
         long int r(random());
         secret = r & 0xfffffff;
         socket.set_secret(secret);
-        roomempty = true;
       }
-      // register at lobby:
-      CURLcode res;
-      sprintf(cpost, "?port=%d&name=%s&pin=%d&srvjit=%1.1f&grp=%s", portno,
-              roomname.c_str(), secret, serverjitter, group.c_str());
-      serverjitter = 0;
-      std::string url(lobbyurl);
-      url += cpost;
-      if(roomempty)
-        // tell frontend that room is not in use:
-        url += "&empty=1";
-      curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-      curl_easy_setopt(curl, CURLOPT_USERPWD, "room:room");
-      curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-      curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-      res = curl_easy_perform(curl);
-      // if successful then reconnect in 6000 periods (10 minutes), otherwise
-      // retry in 500 periods (50 seconds):
-      if(res == 0)
-        cnt = 6000;
-      else
-        cnt = 500;
+      std::cout << "sending status" << std::endl;
+      this->on_status({this->stage_id, secret, serverjitter, this->portno});
+      // retry in 6000 periods (10 minutes):
+      cnt = 6000;
     }
     --cnt;
     std::this_thread::sleep_for(std::chrono::milliseconds(PINGPERIODMS));
     while(!latfifo.empty()) {
       latreport_t lr(latfifo.front());
       latfifo.pop();
-      // register at lobby:
-      sprintf(cpost, "?latreport=%d&src=%d&dest=%d&lat=%1.1f&jit=%1.1f", portno,
-              lr.src, lr.dest, lr.tmean, lr.jitter);
-      std::string url(lobbyurl);
-      url += cpost;
-      curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-      curl_easy_setopt(curl, CURLOPT_USERPWD, "room:room");
-      curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-      curl_easy_perform(curl);
+
+      std::cout << "sending latency" << std::endl;
+      this->on_latency({this->stage_id, lr.src, lr.dest, lr.tmean, lr.jitter});
     }
   }
 }
@@ -183,6 +159,7 @@ void ov_server_t::srv()
   set_thread_prio(prio);
   char buffer[BUFSIZE];
   log(portno, "Multiplex service started (version " OVBOXVERSION ")");
+  this->on_ready(portno);
   endpoint_t sender_endpoint;
   stage_device_id_t rcallerid;
   port_t destport;
@@ -193,7 +170,7 @@ void ov_server_t::srv()
     char* msg(socket.recv_sec_msg(buffer, n, un, rcallerid, destport, seq,
                                   sender_endpoint));
     if(msg) {
-      // regular destination port, forward data:
+      // retransmit data:
       if(destport > MAXSPECIALPORT) {
         for(stage_device_id_t ep = 0; ep != MAXEP; ++ep) {
           if((ep != rcallerid) && (endpoints[ep].timeout > 0) &&
@@ -209,7 +186,6 @@ void ov_server_t::srv()
         // this is a control message:
         switch(destport) {
         case PORT_SEQREP:
-          // sequence error report:
           if(un == sizeof(sequence_t) + sizeof(stage_device_id_t)) {
             stage_device_id_t sender_cid(*(sequence_t*)msg);
             sequence_t seq(*(sequence_t*)(&(msg[sizeof(stage_device_id_t)])));
@@ -220,7 +196,6 @@ void ov_server_t::srv()
           }
           break;
         case PORT_PEERLATREP:
-          // peer-to-peer latency report:
           if(un == 6 * sizeof(double)) {
             double* data((double*)msg);
             {
@@ -240,20 +215,17 @@ void ov_server_t::srv()
           }
           break;
         case PORT_PONG: {
-          // ping response:
           double tms(get_pingtime(msg, un));
           if(tms > 0)
             cid_setpingtime(rcallerid, tms);
         } break;
         case PORT_SETLOCALIP:
-          // receive local IP address of peer:
           if(un == sizeof(endpoint_t)) {
             endpoint_t* localep((endpoint_t*)msg);
             cid_setlocalip(rcallerid, *localep);
           }
           break;
         case PORT_REGISTER:
-          // register new client:
           // in the register packet the sequence is used to transmit
           // peer2peer flag:
           std::string rver("---");
@@ -293,90 +265,7 @@ void ov_server_t::jittermeasurement_service()
   }
 }
 
-static void sighandler(int sig)
+void ov_server_t::stop()
 {
   quit_app = true;
 }
-
-int main(int argc, char** argv)
-{
-  std::chrono::high_resolution_clock::time_point start(
-      std::chrono::high_resolution_clock::now());
-  signal(SIGABRT, &sighandler);
-  signal(SIGTERM, &sighandler);
-  signal(SIGINT, &sighandler);
-  try {
-    curl_global_init(CURL_GLOBAL_DEFAULT);
-    curl = curl_easy_init();
-    if(!curl)
-      throw ErrMsg("Unable to initialize curl.");
-    int portno(0);
-    int prio(55);
-    std::string roomname;
-    std::string lobby("http://oldbox.orlandoviols.com");
-    std::string group;
-    const char* options = "p:qr:hvn:l:g:";
-    struct option long_options[] = {
-        {"rtprio", 1, 0, 'r'},   {"quiet", 0, 0, 'q'}, {"port", 1, 0, 'p'},
-        {"verbose", 0, 0, 'v'},  {"help", 0, 0, 'h'},  {"name", 1, 0, 'n'},
-        {"lobbyurl", 1, 0, 'l'}, {"group", 1, 0, 'g'}, {0, 0, 0, 0}};
-    int opt(0);
-    int option_index(0);
-    while((opt = getopt_long(argc, argv, options, long_options,
-                             &option_index)) != -1) {
-      switch(opt) {
-      case 'h':
-        app_usage("roomservice", long_options, "");
-        return 0;
-      case 'q':
-        verbose = 0;
-        break;
-      case 'p':
-        portno = atoi(optarg);
-        break;
-      case 'v':
-        verbose++;
-        break;
-      case 'r':
-        prio = atoi(optarg);
-        break;
-      case 'n':
-        roomname = optarg;
-        break;
-      case 'g':
-        group = optarg;
-        break;
-      case 'l':
-        lobby = optarg;
-        break;
-      }
-    }
-    std::chrono::high_resolution_clock::time_point end(
-        std::chrono::high_resolution_clock::now());
-    unsigned int seed(
-        std::chrono::duration_cast<std::chrono::nanoseconds>(end - start)
-            .count());
-    seed += portno;
-    // initialize random generator:
-    srandom(seed);
-    ov_server_t rec(portno, prio, group);
-    if(!roomname.empty())
-      rec.set_roomname(roomname);
-    if(!lobby.empty())
-      rec.set_lobbyurl(lobby);
-    rec.srv();
-    curl_easy_cleanup(curl);
-    curl_global_cleanup();
-  }
-  catch(const std::exception& e) {
-    std::cerr << e.what() << std::endl;
-    return 1;
-  }
-  return 0;
-}
-
-/*
- * Local Variables:
- * compile-command: "make -C .."
- * End:
- */
