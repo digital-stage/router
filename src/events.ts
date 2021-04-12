@@ -14,7 +14,7 @@ export enum ClientRouterEvents {
     RESOLVE_PRODUCER = 'resolve-producer',
     STAGE_MANAGED = 'stage-managed',
     STAGE_UN_MANAGED = 'stage-unmanaged',
-    REPORT_LATENCY = "report-latency"
+    REPORT_LATENCY = 'report-latency',
 }
 
 export enum ServerUserEvents {

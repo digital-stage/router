@@ -33,7 +33,7 @@ export const RouterGetUrls = {
     CreateTransport: '/transport/webrtc/create',
 
     CreatePlainTransport: '/transport/plain/create',
-};
+}
 
 export const RouterPostUrls = {
     ConnectTransport: '/transport/webrtc/connect',
@@ -53,4 +53,4 @@ export const RouterPostUrls = {
     PauseConsumer: '/consumer/pause',
     ResumeConsumer: '/consumer/resume',
     CloseConsumer: '/consumer/close',
-};
+}
