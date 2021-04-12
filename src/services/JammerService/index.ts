@@ -46,14 +46,21 @@ class JammerService {
         this.ipv6 = ipv6
         this.serverConnection.on(ServerRouterEvents.ServeStage, this.manageStage)
         this.serverConnection.on(ServerRouterEvents.UnServeStage, this.unManageStage)
+        this.serverConnection.on('disconnect', this.unManageAllStages)
     }
 
-    public close = () => {
+    private unManageAllStages = () => {
         Object.keys(this.managedStages).forEach((stageId) => {
             this.managedStages[stageId].jammerServer.stop()
         })
+        this.managedStages = {}
+    }
+
+    public close = () => {
+        this.unManageAllStages()
         this.serverConnection.off(ServerRouterEvents.ServeStage, this.manageStage)
         this.serverConnection.off(ServerRouterEvents.UnServeStage, this.unManageStage)
+        this.serverConnection.off('disconnect', this.unManageAllStages)
     }
 
     private manageStage = async (payload: ServerRouterPayloads.ServeStage) => {
@@ -73,7 +80,7 @@ class JammerService {
                     jammerServer.on('ready', (listenPort) => {
                         info(`Jammer is ready at port ${listenPort}`)
                     })
-                    info(`Manging stage ${stage._id} '${stage.name}'`)
+                    info(`Manging stage ${stage._id} '${stage.name}' ${this.ipv4}:${port}`)
                     this.serverConnection.emit(ClientRouterEvents.StageServed, {
                         kind: 'audio',
                         type: 'jammer',
@@ -117,6 +124,7 @@ class JammerService {
         if (type === 'ov' && kind === 'audio') {
             const managedStage = this.managedStages[stageId]
             if (managedStage) {
+                info(`Stop serving '${managedStage.stage.name}'`)
                 managedStage.jammerServer.stop()
                 delete this.managedStages[stageId]
 

@@ -46,14 +46,21 @@ class OvService {
         this.ipv6 = ipv6
         this.serverConnection.on(ServerRouterEvents.ServeStage, this.manageStage)
         this.serverConnection.on(ServerRouterEvents.UnServeStage, this.unManageStage)
+        this.serverConnection.on('disconnect', this.unManageAllStages)
     }
 
     public close = () => {
+        this.unManageAllStages()
+        this.serverConnection.off(ServerRouterEvents.ServeStage, this.manageStage)
+        this.serverConnection.off(ServerRouterEvents.UnServeStage, this.unManageStage)
+        this.serverConnection.off('disconnect', this.unManageAllStages)
+    }
+
+    private unManageAllStages = () => {
         Object.keys(this.managedStages).forEach((stageId) => {
             this.managedStages[stageId].ovServer.stop()
         })
-        this.serverConnection.off(ServerRouterEvents.ServeStage, this.manageStage)
-        this.serverConnection.off(ServerRouterEvents.UnServeStage, this.unManageStage)
+        this.managedStages = {}
     }
 
     private manageStage = async (payload: ServerRouterPayloads.ServeStage) => {
@@ -89,7 +96,7 @@ class OvService {
                             },
                         } as ClientRouterPayloads.ChangeStage<OvStage>)
                     })
-                    info(`Manging stage ${stage._id} '${stage.name}'`)
+                    info(`Manging stage ${stage._id} '${stage.name}' ${this.ipv4}:${port}`)
                     this.serverConnection.emit(ClientRouterEvents.StageServed, {
                         kind: 'audio',
                         type: 'ov',
@@ -127,9 +134,9 @@ class OvService {
         if (type === 'ov' && kind === 'audio') {
             const managedStage = this.managedStages[stageId]
             if (managedStage) {
+                info(`Stop serving '${managedStage.stage.name}'`)
                 managedStage.ovServer.stop()
                 delete this.managedStages[stageId]
-
                 this.serverConnection.emit(ClientRouterEvents.StageUnServed, {
                     type,
                     kind,

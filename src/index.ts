@@ -16,13 +16,17 @@ let mediasoupService: MediasoupService
 let serverConnection: ITeckosClient
 
 const startService = () => {
-    return getInitialRouter().then((initialRouter) => {
+    return getInitialRouter().then(async (initialRouter) => {
         info(`Using public IPv4 ${initialRouter.ipv4}`)
         info(`Using public IPv6 ${initialRouter.ipv6}`)
 
         serverConnection = new TeckosClient(API_URL)
 
         const mediasoupConfig = getDefaultMediasoupConfig(initialRouter.ipv4)
+
+        mediasoupService = new MediasoupService(mediasoupConfig, PORT)
+        await mediasoupService.listen()
+        info(`Running mediasoup on port ${PORT}`)
 
         serverConnection.on(ServerRouterEvents.Ready, (router: ServerRouterPayloads.Ready) => {
             info('Successful authenticated on API server')
@@ -31,6 +35,7 @@ const startService = () => {
                     info('Starting jammer service')
                     jammerService = new JammerService(
                         serverConnection,
+                        router,
                         initialRouter.ipv4,
                         initialRouter.ipv6
                     )
@@ -39,21 +44,13 @@ const startService = () => {
                     info('Starting ov service')
                     ovService = new OvService(
                         serverConnection,
+                        router,
                         initialRouter.ipv4,
                         initialRouter.ipv6
                     )
                 }
-                if (!mediasoupService) {
-                    info('Starting mediasoup service')
-                    mediasoupService = new MediasoupService(
-                        serverConnection,
-                        router,
-                        mediasoupConfig
-                    )
-                    await mediasoupService.init()
-                    await mediasoupService.start(PORT)
-                    info(`Running mediasoup on port ${PORT}`)
-                }
+                info('Starting mediasoup service')
+                await mediasoupService.start(serverConnection, router)
             }
             return startServices()
                 .then(() => serverConnection.emit(ClientRouterEvents.Ready))
@@ -62,16 +59,20 @@ const startService = () => {
 
         serverConnection.on('disconnect', () => {
             warn('Disconnected from API server')
-            /* if( ovService ) {
-      info("Shutting down ov service");
-      ovService.close();
-      ovService = undefined;
-    }
-    if (mediasoupService) {
-      info("Shutting down mediasoup service");
-      mediasoupService.close();
-      mediasoupService = undefined;
-    } */
+            if (jammerService) {
+                info('Shutting down jammer service')
+                jammerService.close()
+                jammerService = undefined
+            }
+            if (ovService) {
+                info('Shutting down ov service')
+                ovService.close()
+                ovService = undefined
+            }
+            if (mediasoupService) {
+                info('Shutting down mediasoup service')
+                mediasoupService.close()
+            }
         })
 
         serverConnection.on('connect', () => {

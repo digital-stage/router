@@ -33,15 +33,17 @@ export interface MediasoupConfiguration {
 }
 
 class MediasoupService {
-    private readonly serverConnection: ITeckosClient
+    private readonly port: number
 
     private readonly provider: TemplatedApp
 
     private readonly socket: UWSProvider
 
-    private readonly router: Router
-
     private readonly config: MediasoupConfiguration
+
+    private router: Router
+
+    private serverConnection: ITeckosClient
 
     private initialized: boolean = false
 
@@ -70,14 +72,22 @@ class MediasoupService {
         [id: string]: Consumer
     } = {}
 
-    constructor(serverConnection: ITeckosClient, router: Router, config: MediasoupConfiguration) {
-        this.router = router
+    constructor(config: MediasoupConfiguration, port: number) {
         this.config = config
-        this.serverConnection = serverConnection
         this.provider = uWS.App()
+        this.port = port
         this.socket = new UWSProvider(this.provider)
         this.attachRestHandlers()
         this.attachSocketHandlers()
+    }
+
+    public listen = (): Promise<any> => {
+        return this.socket.listen(this.port)
+    }
+
+    public start = (serverConnection: ITeckosClient, router: Router): Promise<any> => {
+        this.router = router
+        this.serverConnection = serverConnection
         this.serverConnection.on(
             ServerRouterEvents.ServeStage,
             (payload: ServerRouterPayloads.ServeStage) => {
@@ -175,31 +185,40 @@ class MediasoupService {
                 }
             }
         )
-    }
-
-    public start = (port: number): Promise<any> => {
-        return this.socket.listen(port)
+        return this.init()
     }
 
     public close = () => {
+        trace('Closing local producers')
         Object.keys(this.localProducers).forEach((id) => {
             this.localProducers[id].close()
         })
+        this.localProducers = {}
+        trace('Closing local consumers')
         Object.keys(this.localConsumers).forEach((id) => {
             this.localConsumers[id].close()
         })
+        this.localConsumers = {}
+        trace('Closing webrtcs')
         Object.keys(this.transports.webrtc).forEach((id) => {
             this.transports.webrtc[id].close()
         })
+        trace('Closing plains')
         Object.keys(this.transports.plain).forEach((id) => {
             this.transports.plain[id].close()
         })
+        this.transports = {
+            webrtc: {},
+            plain: {},
+        }
+        trace('Closing mediasoup routers')
         this.mediasoupRouters.forEach((mediasoupRouter) => {
             mediasoupRouter.router.close()
         })
+        this.mediasoupRouters = []
     }
 
-    public init = (): Promise<any> => {
+    private init = (): Promise<any> => {
         const cpuCount: number = os.cpus().length
 
         const results: Promise<MediasoupRouter>[] = []
