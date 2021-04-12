@@ -7,6 +7,8 @@ import {
     DOMAIN,
     IP_V4,
     IP_V6,
+    JAMMER_MAX_PORT,
+    JAMMER_MIN_PORT,
     LATITUDE,
     LISTEN_IP,
     LONGITUDE,
@@ -53,6 +55,7 @@ const getInitialRouter = async (): Promise<Omit<Router, '_id'>> => {
         port: PUBLIC_PORT,
         availableRTCSlots: RTC_MAX_PORT - RTC_MIN_PORT,
         availableOVSlots: OV_MAX_PORT - OV_MIN_PORT,
+        availableJammerSlots: JAMMER_MAX_PORT - JAMMER_MIN_PORT,
         countryCode: COUNTRY_CODE || locates.country_code,
         city: CITY || locates.city,
         position: {

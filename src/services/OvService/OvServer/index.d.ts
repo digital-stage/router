@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events'
 
 declare class OvServer extends EventEmitter.EventEmitter {
-    constructor(port: number, prio: number, group: string, name: string)
+    constructor(port: number, prio: number, stageId: string)
 
     on(event: 'ready', listener: (port: number) => void): this
 

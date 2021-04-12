@@ -26,6 +26,8 @@ const RTC_MIN_PORT = parseInt(process.env.RTC_MIN_PORT, 10)
 const RTC_MAX_PORT = parseInt(process.env.RTC_MAX_PORT, 10)
 const OV_MIN_PORT = parseInt(process.env.OV_MIN_PORT, 10)
 const OV_MAX_PORT = parseInt(process.env.OV_MAX_PORT, 10)
+const JAMMER_MIN_PORT = parseInt(process.env.JAMMER_MIN_PORT, 10)
+const JAMMER_MAX_PORT = parseInt(process.env.JAMMER_MAX_PORT, 10)
 const CONNECTIONS_PER_CPU = parseInt(process.env.CONNECTIONS_PER_CPU, 10)
 const USE_IPV6 = process.env.USE_IPV6 ? process.env.USE_IPV6 === 'true' : false
 const USE_SENTRY = process.env.USE_SENTRY ? process.env.USE_SENTRY === 'true' : false
@@ -38,6 +40,8 @@ export {
     RTC_MAX_PORT,
     OV_MIN_PORT,
     OV_MAX_PORT,
+    JAMMER_MIN_PORT,
+    JAMMER_MAX_PORT,
     API_KEY,
     IP_V4,
     IP_V6,

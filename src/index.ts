@@ -6,10 +6,12 @@ import OvService from './services/OvService'
 import MediasoupService from './services/MediasoupService'
 import logger from './logger'
 import { ClientRouterEvents, ServerRouterEvents, ServerRouterPayloads } from './types'
+import JammerService from './services/JammerService'
 
 const { info, warn, error } = logger('')
 
 let ovService: OvService
+let jammerService: JammerService
 let mediasoupService: MediasoupService
 let serverConnection: ITeckosClient
 
@@ -24,7 +26,15 @@ const startService = () => {
 
         serverConnection.on(ServerRouterEvents.Ready, (router: ServerRouterPayloads.Ready) => {
             info('Successful authenticated on API server')
-            const startServices = async function () {
+            const startServices = async () => {
+                if (!jammerService) {
+                    info('Starting jammer service')
+                    jammerService = new JammerService(
+                        serverConnection,
+                        initialRouter.ipv4,
+                        initialRouter.ipv6
+                    )
+                }
                 if (!ovService) {
                     info('Starting ov service')
                     ovService = new OvService(

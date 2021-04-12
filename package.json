@@ -6,7 +6,7 @@
   "gypfile": true,
   "scripts": {
     "postinstall": "git submodule update --init && ./version.sh && CFLAGS=-mmacosx-version-min=10.13 CXXFLAGS=-mmacosx-version-min=10.13 make -C libov && node-gyp configure && node-gyp build",
-    "dev": "DEBUG=router:* nodemon --watch './src/**/*.ts' --exec 'ts-node' src/index.ts",
+    "dev": "DEBUG=* nodemon --watch './src/**/*.ts' --exec 'ts-node' src/index.ts",
     "lint": "npx eslint --fix ./src --ext .js,.ts",
     "build": "NODE_ENV=production tsc",
     "start": "DEBUG=router:* NODE_ENV=production node ./dist/index.js"
