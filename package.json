@@ -5,10 +5,10 @@
   "main": "index.js",
   "gypfile": true,
   "scripts": {
-    "postinstall": "git submodule update --init && ./version.sh && CFLAGS=-mmacosx-version-min=10.13 CXXFLAGS=-mmacosx-version-min=10.13 make -C libov && node-gyp configure && node-gyp build",
+    "postinstall": "git submodule update --init && ./version.sh && make -C libov && node-gyp configure && node-gyp build",
     "dev": "DEBUG=* nodemon --watch './src/**/*.ts' --exec 'ts-node' src/index.ts",
     "lint": "npx eslint --fix ./src --ext .js,.ts",
-    "build": "NODE_ENV=production tsc",
+    "build": "node-gyp build && NODE_ENV=production tsc",
     "start": "DEBUG=router:* NODE_ENV=production node ./dist/index.js"
   },
   "repository": {
@@ -30,14 +30,14 @@
   "devDependencies": {
     "@types/cors": "^2.8.10",
     "@types/debug": "^4.1.5",
-    "@types/node": "^14.14.37",
+    "@types/node": "^14.14.41",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
     "eslint": "^7.24.0",
     "eslint-config-airbnb-typescript": "^12.3.1",
     "eslint-config-prettier": "^8.2.0",
     "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-promise": "^5.1.0",
     "nodemon": "^2.0.7",
     "prettier": "^2.2.1",
@@ -47,18 +47,18 @@
     "typescript": "^4.2.4"
   },
   "dependencies": {
-    "@sentry/integrations": "^6.2.5",
-    "@sentry/node": "^6.2.5",
-    "@sentry/tracing": "^6.2.5",
+    "@sentry/integrations": "^6.3.0",
+    "@sentry/node": "^6.3.0",
+    "@sentry/tracing": "^6.3.0",
     "@types/ws": "^7.4.1",
     "bindings": "^1.5.0",
     "debug": "^4.3.1",
     "dotenv": "^8.2.0",
     "isomorphic-ws": "^4.0.1",
     "lodash": "^4.17.21",
-    "mediasoup": "^3.7.1",
+    "mediasoup": "^3.7.2",
     "napi-thread-safe-callback": "^0.0.6",
-    "node": "^15.12.0",
+    "node": "^15.14.0",
     "node-addon-api": "^3.1.0",
     "node-fetch": "^2.6.1",
     "node-gyp": "^8.0.0",
@@ -67,6 +67,6 @@
     "teckos": "^0.2.4",
     "teckos-client": "^0.1.3",
     "uncaught": "^0.0.5",
-    "ws": "^7.4.4"
+    "ws": "^7.4.5"
   }
 }

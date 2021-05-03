@@ -78,8 +78,7 @@
             "<!(node -p \"require('node-addon-api').gyp\")"
         ],
         'defines': [
-            'OVBOXVERSION="<!(echo $FULLVERSION)"',
-            'OVBOXVERSION="<!(echo $FULLVERSION)"'
+            'OVBOXVERSION="0.3"'
          ],
         'conditions': [
             ['"$ARCH"=="AMD64"', {

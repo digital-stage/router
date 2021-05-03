@@ -1,6 +1,5 @@
 #include "napi-thread-safe-callback.hpp"
 #include <chrono>
-#include <iostream>
 #include <thread>
 
 #include "ov-server-wrapper.h"
@@ -49,19 +48,11 @@ OvServerWrapper::OvServerWrapper(const Napi::CallbackInfo& info)
       new ov_server_t(portno.DoubleValue(), prio.DoubleValue(), stage_id);
 
   // Bind events
-  Napi::Function emit =
-      info.This().As<Napi::Object>().Get("emit").As<Napi::Function>();
-
   auto callback = std::make_shared<ThreadSafeCallback>(
       info.This().As<Napi::Object>(),
       info.This().As<Napi::Object>().Get("emit").As<Napi::Function>());
-  // emit.Call(_self, { Napi::String::New(env, "ready") });
-
-  Napi::Object _self = info.This().As<Napi::Object>();
 
   this->ov_server_->on_ready = [callback](int port) {
-    std::cout << "READY" << std::endl;
-
     // Call back with result
     callback->call([port](Napi::Env env, std::vector<napi_value>& args) {
       args = {Napi::String::New(env, "ready"), Napi::Number::New(env, port)};
@@ -69,8 +60,6 @@ OvServerWrapper::OvServerWrapper(const Napi::CallbackInfo& info)
   };
 
   this->ov_server_->on_connect = [callback](connection_report_t report) {
-    std::cout << "ON_CONNECT" << std::endl;
-
     // Call back with result
     callback->call([report](Napi::Env env, std::vector<napi_value>& args) {
       Napi::Object obj = Napi::Object::New(env);
@@ -90,8 +79,6 @@ OvServerWrapper::OvServerWrapper(const Napi::CallbackInfo& info)
   };
 
   this->ov_server_->on_latency = [callback](latency_report_t report) {
-    std::cout << "ON_DISCONNECT" << std::endl;
-
     // Call back with result
     callback->call([report](Napi::Env env, std::vector<napi_value>& args) {
       Napi::Object obj = Napi::Object::New(env);
@@ -105,8 +92,6 @@ OvServerWrapper::OvServerWrapper(const Napi::CallbackInfo& info)
   };
 
   this->ov_server_->on_status = [callback](status_report_t report) {
-    std::cout << "ON_STATUS" << std::endl;
-
     // Call back with result
     callback->call([report](Napi::Env env, std::vector<napi_value>& args) {
       Napi::Object obj = Napi::Object::New(env);
@@ -119,8 +104,6 @@ OvServerWrapper::OvServerWrapper(const Napi::CallbackInfo& info)
   };
 
   this->ov_server_->on_disconnect = [callback](stage_device_id_t id) {
-    std::cout << "ON_DISCONNECT" << std::endl;
-
     // Call back with result
     callback->call([id](Napi::Env env, std::vector<napi_value>& args) {
       args = {Napi::String::New(env, "disconnect"), Napi::Number::New(env, id)};

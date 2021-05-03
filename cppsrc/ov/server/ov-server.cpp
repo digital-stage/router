@@ -86,19 +86,25 @@ void ov_server_t::announce_service()
 {
   // participand announcement counter:
   uint32_t cnt(0);
-  char cpost[1024];
+  //char cpost[1024];
   while(runsession) {
     if(!cnt) {
-      std::cout << "announce_service: " << cnt << std::endl;
       // if nobody is connected create a new pin:
       if(get_num_clients() == 0) {
         long int r(random());
         secret = r & 0xfffffff;
         socket.set_secret(secret);
       }
-      std::cout << "sending status" << std::endl;
-      this->on_status({this->stage_id, secret, serverjitter, this->portno});
-      // retry in 6000 periods (10 minutes):
+
+     status_report_t report;
+     report.stage_id = stage_id;
+     report.pin = secret;
+     report.serverjitter = serverjitter;
+     report.portno = portno;
+     if( this->on_status ) {
+        this->on_status({this->stage_id, secret, serverjitter, this->portno});
+     }
+     // retry in 6000 periods (10 minutes):
       cnt = 6000;
     }
     --cnt;
@@ -107,8 +113,9 @@ void ov_server_t::announce_service()
       latreport_t lr(latfifo.front());
       latfifo.pop();
 
-      std::cout << "sending latency" << std::endl;
-      this->on_latency({this->stage_id, lr.src, lr.dest, lr.tmean, lr.jitter});
+      if( this->on_latency ) {
+        this->on_latency({this->stage_id, lr.src, lr.dest, lr.tmean, lr.jitter});
+      }
     }
   }
 }
@@ -159,7 +166,9 @@ void ov_server_t::srv()
   set_thread_prio(prio);
   char buffer[BUFSIZE];
   log(portno, "Multiplex service started (version " OVBOXVERSION ")");
-  this->on_ready(portno);
+  if( this->on_ready ) {
+    this->on_ready(portno);
+  }
   endpoint_t sender_endpoint;
   stage_device_id_t rcallerid;
   port_t destport;
