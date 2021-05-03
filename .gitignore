@@ -1,7 +1,6 @@
 .DS_Store
 build
-.env
-.env.production
+.env.local
 node_modules
 .idea
 dist
