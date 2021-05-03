@@ -1,7 +1,4 @@
 import ITeckosClient from 'teckos-client/dist/ITeckosClient'
-import NativeOvServer, { OvServer } from './OvServer'
-import { OV_MAX_PORT, OV_MIN_PORT } from '../../env'
-import logger from '../../logger'
 import {
     ClientRouterEvents,
     ClientRouterPayloads,
@@ -10,7 +7,10 @@ import {
     ServerRouterEvents,
     ServerRouterPayloads,
     Stage,
-} from '../../types'
+} from '@digitalstage/api-types'
+import NativeOvServer, { OvServer } from './OvServer'
+import { OV_MAX_PORT, OV_MIN_PORT } from '../../env'
+import logger from '../../logger'
 
 const TIMEOUT: number = 2000
 

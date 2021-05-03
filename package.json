@@ -1,5 +1,6 @@
 {
   "name": "@digitalstage/router",
+  "private": true,
   "version": "0.0.2",
   "description": "Routing service to provide ov and webrtc streaming",
   "main": "index.js",
@@ -47,6 +48,7 @@
     "typescript": "^4.2.4"
   },
   "dependencies": {
+    "@digitalstage/api-types": "*",
     "@sentry/integrations": "^6.3.5",
     "@sentry/node": "^6.3.5",
     "@sentry/tracing": "^6.3.5",
@@ -56,7 +58,7 @@
     "dotenv": "^8.2.0",
     "isomorphic-ws": "^4.0.1",
     "lodash": "^4.17.21",
-    "mediasoup": "^3.7.4",
+    "mediasoup": "^3.7.5",
     "napi-thread-safe-callback": "^0.0.6",
     "node": "^16.0.0",
     "node-addon-api": "^3.1.0",

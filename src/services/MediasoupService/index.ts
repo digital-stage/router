@@ -10,16 +10,16 @@ import { Producer } from 'mediasoup/lib/Producer'
 import { Consumer } from 'mediasoup/lib/Consumer'
 import omit from 'lodash/omit'
 import os from 'os'
-import { CONNECTIONS_PER_CPU, DOMAIN, PUBLIC_PORT, ROOT_PATH, WS_PREFIX } from '../../env'
-import { RouterRequests } from './events'
-import logger from '../../logger'
 import {
     ClientRouterEvents,
     ClientRouterPayloads,
     Router,
     ServerRouterEvents,
     ServerRouterPayloads,
-} from '../../types'
+} from '@digitalstage/api-types'
+import { CONNECTIONS_PER_CPU, DOMAIN, PUBLIC_PORT, ROOT_PATH, WS_PREFIX } from '../../env'
+import { RouterRequests } from './events'
+import logger from '../../logger'
 
 const { trace, warn, error } = logger('mediasoup')
 

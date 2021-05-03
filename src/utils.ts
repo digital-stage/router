@@ -1,5 +1,6 @@
 import * as publicIp from 'public-ip'
 import iplocate from 'node-iplocate'
+import { Router } from '@digitalstage/api-types'
 import {
     ANNOUNCED_IP,
     CITY,
@@ -24,7 +25,6 @@ import {
     WS_PREFIX,
 } from './env'
 import { MediasoupConfiguration } from './services/MediasoupService'
-import { Router } from './types'
 
 const getDefaultMediasoupConfig = (ipv4: string): MediasoupConfiguration => {
     return {

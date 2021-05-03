@@ -1,11 +1,15 @@
 import { TeckosClient } from 'teckos-client'
 import ITeckosClient from 'teckos-client/dist/ITeckosClient'
+import {
+    ClientRouterEvents,
+    ServerRouterEvents,
+    ServerRouterPayloads,
+} from '@digitalstage/api-types'
 import { API_KEY, API_URL, PORT } from './env'
 import { getDefaultMediasoupConfig, getInitialRouter } from './utils'
 import OvService from './services/OvService'
 import MediasoupService from './services/MediasoupService'
 import logger from './logger'
-import { ClientRouterEvents, ServerRouterEvents, ServerRouterPayloads } from './types'
 import JammerService from './services/JammerService'
 
 const { info, warn, error } = logger('')
