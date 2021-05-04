@@ -1,4 +1,4 @@
-#include "JammerServer.cpp"
+#include "JammerServer.h"
 #include <napi.h>
 
 class JammerServerWrapper : public Napi::ObjectWrap<JammerServerWrapper> {

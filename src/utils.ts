@@ -1,5 +1,5 @@
 import * as publicIp from 'public-ip'
-import iplocate from 'node-iplocate'
+import geoip from 'geoip-lite'
 import { Router } from '@digitalstage/api-types'
 import {
     ANNOUNCED_IP,
@@ -44,7 +44,7 @@ const getDefaultMediasoupConfig = (ipv4: string): MediasoupConfiguration => {
 const getInitialRouter = async (): Promise<Omit<Router, '_id'>> => {
     const ipv4: string = IP_V4 || (await publicIp.v4())
     const ipv6: string = USE_IPV6 ? IP_V6 || (await publicIp.v6()) : undefined
-    const locates = await iplocate(ipv4)
+    const locates = geoip.lookup(ipv4)
     return {
         wsPrefix: WS_PREFIX,
         restPrefix: REST_PREFIX,
@@ -56,11 +56,11 @@ const getInitialRouter = async (): Promise<Omit<Router, '_id'>> => {
         availableRTCSlots: RTC_MAX_PORT - RTC_MIN_PORT,
         availableOVSlots: OV_MAX_PORT - OV_MIN_PORT,
         availableJammerSlots: JAMMER_MAX_PORT - JAMMER_MIN_PORT,
-        countryCode: COUNTRY_CODE || locates.country_code,
+        countryCode: COUNTRY_CODE || locates.country,
         city: CITY || locates.city,
         position: {
-            lat: LATITUDE || locates.latitude,
-            lng: LONGITUDE || locates.longitude,
+            lat: LATITUDE || locates.ll[0],
+            lng: LONGITUDE || locates.ll[1],
         },
         types: {
             mediasoup: RTC_MAX_PORT - RTC_MIN_PORT,

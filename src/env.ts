@@ -6,9 +6,6 @@ const getEnvPath = () => {
     if (fs.existsSync('.env.local')) return '.env.local'
     if (fs.existsSync('.env')) return '.env'
     if (fs.existsSync(`.env.${process.env.NODE_ENV}`)) return `.env.${process.env.NODE_ENV}`
-    throw new Error(
-        `No environmental file (.env.local, .env or .env.${process.env.NODE_ENV}) provided!`
-    )
 }
 
 const envPath = getEnvPath()

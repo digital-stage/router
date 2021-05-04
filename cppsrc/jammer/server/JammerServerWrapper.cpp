@@ -65,15 +65,14 @@ JammerServerWrapper::JammerServerWrapper(const Napi::CallbackInfo& info)
       new JammerServer(cryptoKey, portno.DoubleValue(), buffer.DoubleValue(), wait.DoubleValue(), prefill.DoubleValue(), stage_id);
 
   // Bind events
-  Napi::Function emit =
-      info.This().As<Napi::Object>().Get("emit").As<Napi::Function>();
+  //Napi::Function emit = info.This().As<Napi::Object>().Get("emit").As<Napi::Function>();
 
   auto callback = std::make_shared<ThreadSafeCallback>(
       info.This().As<Napi::Object>(),
       info.This().As<Napi::Object>().Get("emit").As<Napi::Function>());
   // emit.Call(_self, { Napi::String::New(env, "ready") });
 
-  Napi::Object _self = info.This().As<Napi::Object>();
+  //Napi::Object _self = info.This().As<Napi::Object>();
 
   this->jammerServer_->on_ready = [callback](int port) {
     std::cout << "READY" << std::endl;

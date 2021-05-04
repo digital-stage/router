@@ -2,6 +2,8 @@
     "targets": [
         {
         "target_name": "jammerserver",
+        'cflags!': [ '-fno-exceptions' ],
+        'cflags_cc!': [ '-fno-exceptions' ],
         "sources": [
             "cppsrc/jammer/main.cpp",
             "cppsrc/jammer/server/JammerServer.cpp",
@@ -23,6 +25,9 @@
         'dependencies': [
             "<!(node -p \"require('node-addon-api').gyp\")"
         ],
+        'defines': [
+            'NAPI_CPP_EXCEPTIONS'
+         ],
         'conditions': [
             ['OS=="mac"', {
               'xcode_settings': {
@@ -53,6 +58,7 @@
         "cflags": [
             "-Wall",
             "-fno-finite-math-only",
+            '-fno-exceptions'
           ],
         "cflags_cc!": [ "-fno-exceptions" ],
         "cflags_cc": [
@@ -78,6 +84,7 @@
             "<!(node -p \"require('node-addon-api').gyp\")"
         ],
         'defines': [
+            'NAPI_CPP_EXCEPTIONS',
             'OVBOXVERSION="0.3"'
          ],
         'conditions': [
