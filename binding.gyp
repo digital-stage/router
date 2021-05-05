@@ -55,11 +55,14 @@
         "cflags": [
             "-Wall",
             "-fno-finite-math-only",
+            "-ext-numeric-literals",
             "-fPIC"
           ],
         "cflags_cc": [
             "-Wall",
             "-Wno-deprecated-declarations",
+            "-fno-finite-math-only",
+            "-ext-numeric-literals",
             "-std=c++11",
             "-pthread",
             "-ggdb",
@@ -112,10 +115,6 @@
               ]
             }],
             ['OS=="linux"', {
-              'cflags_cc': [
-                "-fno-finite-math-only",
-                "-ext-numeric-literals"
-              ],
               'defines': [
                 'LINUX'
               ]
