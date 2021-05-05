@@ -40,9 +40,6 @@
             ['OS=="linux"', {
               'cflags_cc': [
                 "-ext-numeric-literals",
-              ],
-              'libraries': [
-                "-lasound"
               ]
             }]
         ]
@@ -55,15 +52,14 @@
             "cppsrc/ov/server/ov-server-wrapper.cpp",
         ],
         "cflags!": [ "-fno-exceptions" ],
+        "cflags_cc!": [ "-fno-exceptions" ],
         "cflags": [
             "-Wall",
             "-fno-finite-math-only",
-            '-fno-exceptions'
+            "-fPIC"
           ],
-        "cflags_cc!": [ "-fno-exceptions" ],
         "cflags_cc": [
             "-Wall",
-            "-fno-finite-math-only",
             "-Wno-deprecated-declarations",
             "-std=c++11",
             "-pthread",
@@ -118,7 +114,8 @@
             }],
             ['OS=="linux"', {
               'cflags_cc': [
-                "-ext-numeric-literals",
+                "-fno-finite-math-only",
+                "-ext-numeric-literals"
               ],
               'defines': [
                 'LINUX'
