@@ -19,6 +19,12 @@ module.exports = {
                 "leadingUnderscore": "allow"
             },
         ],
+        "prettier/prettier": [
+            "error",
+            {
+                "endOfLine": "auto"
+            },
+        ],
     },
     parserOptions: {
         project: './tsconfig.json'

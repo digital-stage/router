@@ -5,7 +5,7 @@ import fs from 'fs'
 const getEnvPath = () => {
     if (fs.existsSync('.env.local')) return '.env.local'
     if (fs.existsSync('.env')) return '.env'
-    if (fs.existsSync(`.env.${process.env.NODE_ENV}`)) return `.env.${process.env.NODE_ENV}`
+    return `.env.${process.env.NODE_ENV}`
 }
 
 const envPath = getEnvPath()
