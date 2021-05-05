@@ -19,8 +19,7 @@
         'libraries': [
             "-lcurl",
             "-ldl",
-            "-lpthread",
-            "-lncurses"
+            "-lpthread"
         ],
         'dependencies': [
             "<!(node -p \"require('node-addon-api').gyp\")"
