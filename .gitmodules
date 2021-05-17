@@ -2,6 +2,3 @@
 	path = libov
 	url = https://github.com/gisogrimm/libov.git
 	branch = feature/fpic-flag
-[submodule "jammer"]
-	path = jammer
-	url = https://github.com/christofmuc/JammerNetz.git
